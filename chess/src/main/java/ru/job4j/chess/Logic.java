@@ -20,8 +20,12 @@ public final class Logic {
         figures[index] = figures[index].copy(dest);
     }
 
-    private boolean free(Cell[] steps) throws OccupiedCellException {
-        return true;
+    private void free(Cell[] steps) throws OccupiedCellException {
+        for (Cell cell : steps) {
+            if (indexOfFigure(cell) != -1) {
+                throw new OccupiedCellException("This move is impossible, other figure is on your way");
+            }
+        }
     }
 
     public void clean() {
@@ -29,13 +33,32 @@ public final class Logic {
         index = 0;
     }
 
-    private int findBy(Cell cell) throws FigureNotFoundException {
+    /**
+     * 2. Каркас шахматной доски [#285792]
+     * Алгоритм поиска индекса вырезан из метода findBy()
+     * но данный метод не бросает исключение, а возвращает -1,
+     * если в данной клетке нет фигуры
+     *
+     * @param cell ссылка на проверяемую ячейку
+     * @return индекс фигуры в массиве figures, -1 если клетка пустая
+     */
+    private int indexOfFigure(Cell cell) {
+        int result = -1;
         for (int index = 0; index != figures.length; index++) {
             Figure figure = figures[index];
             if (figure != null && figure.position().equals(cell)) {
-                return index;
+                result = index;
+                break;
             }
         }
-        throw new FigureNotFoundException();
+        return result;
+    }
+
+    private int findBy(Cell cell) throws FigureNotFoundException {
+        int result = indexOfFigure(cell);
+        if (result == -1) {
+            throw new FigureNotFoundException();
+        }
+        return result;
     }
 }
